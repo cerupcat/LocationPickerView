@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.screenshots  = "https://raw.github.com/mstrchrstphr/LocationPickerView/master/github-images/01.png"
   s.license      = { :type => 'MIT', :file => 'LICENSE' }
   s.author       = { "Christopher Constable" => "chris@futura.io" }
-  s.source       = { :git => "https://github.com/mstrchrstphr/LocationPickerView.git", :tag => "1.1.1" }
+  s.source       = { :git => "https://github.com/cerupcat/LocationPickerView.git", :tag => "1.1.1" }
   s.source_files = 'LocationPickerView/**/*.{h,m}'
   s.framework  = 'UIKit', 'MapKit'
   s.requires_arc = true
