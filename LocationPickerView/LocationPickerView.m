@@ -276,14 +276,16 @@
                              self.defaultMapHeight + (self.defaultMapHeight * self.parallaxScrollFactor * 2));
     self.mapView.frame = newMapFrame;
     
-    [self bringSubviewToFront:self.mapView];
     [self insertSubview:self.closeMapButton aboveSubview:self.mapView];
     
     // Store the correct tableViewFrame.
     // Set table view off the bottom of the screen, and animate
     // back to normal
     CGRect tempFrame = self.tableView.frame;
-    tempFrame.origin.y = tempFrame.size.height - self.defaultMapHeight - self.amountOfTableToShow;
+    tempFrame.origin.y = tempFrame.size.height - self.amountOfTableToShow;
+    
+    //disable scrolling when map is expanded
+    self.tableView.scrollEnabled = NO;
     
     if(animated == YES)
     {
@@ -295,6 +297,13 @@
                              frame.size.height -= self.amountOfTableToShow;
                              self.mapView.frame = frame;
                              self.tableView.frame = tempFrame;
+                             
+                             //resize header to 0
+                             CGRect tableHeaderViewFrame = CGRectMake(0.0, 0.0, self.tableView.frame.size.width, 0);
+                             UIView *tableHeaderView = self.tableView.tableHeaderView;
+                             tableHeaderView.frame = tableHeaderViewFrame;
+                             self.tableView.tableHeaderView = tableHeaderView;
+                             
                          } completion:^(BOOL finished) {
                              self.isMapAnimating = NO;
                              _isMapFullScreen = YES;
@@ -322,6 +331,12 @@
         _isMapFullScreen = YES;
         self.mapView.scrollEnabled = YES;
         self.mapView.zoomEnabled = YES;
+        
+        //resize header to 0
+        CGRect tableHeaderViewFrame = CGRectMake(0.0, 0.0, self.tableView.frame.size.width, 0);
+        UIView *tableHeaderView = self.tableView.tableHeaderView;
+        tableHeaderView.frame = tableHeaderViewFrame;
+        self.tableView.tableHeaderView = tableHeaderView;
         
         if ([self.delegate respondsToSelector:@selector(locationPicker:mapViewDidExpand:)]) {
             [self.delegate locationPicker:self mapViewDidExpand:self.mapView];
@@ -374,6 +389,9 @@
     self.tableView.frame = CGRectMake(0, self.tableView.frame.origin.y, tempFrame.size.width, tempFrame.size.height);
     [self insertSubview:self.mapView belowSubview:self.tableView];
     
+    //enable scrolling
+    self.tableView.scrollEnabled = NO;
+    
     if(animated == YES)
     {
         [UIView animateWithDuration:0.4
@@ -382,6 +400,13 @@
                          animations:^{
                              self.mapView.frame = self.defaultMapViewFrame;
                              self.tableView.frame = tempFrame;
+                             
+                             //set tableHeaderView height back to default
+                             CGRect tableHeaderViewFrame = CGRectMake(0.0, 0.0, self.tableView.frame.size.width, self.defaultMapHeight);
+                             UIView *tableHeaderView = self.tableView.tableHeaderView;
+                             tableHeaderView.frame = tableHeaderViewFrame;
+                             self.tableView.tableHeaderView = tableHeaderView;
+                             
                          } completion:^(BOOL finished) {
                              
                              // "Pop" the map view back in
@@ -401,6 +426,12 @@
     {
         self.mapView.frame = self.defaultMapViewFrame;
         self.tableView.frame = tempFrame;
+        
+        //set tableHeaderView height back to default
+        CGRect tableHeaderViewFrame = CGRectMake(0.0, 0.0, self.tableView.frame.size.width, self.defaultMapHeight);
+        UIView *tableHeaderView = self.tableView.tableHeaderView;
+        tableHeaderView.frame = tableHeaderViewFrame;
+        self.tableView.tableHeaderView = tableHeaderView;
 
         // "Pop" the map view back in
         [self insertSubview:self.closeMapButton aboveSubview:self.mapView];
