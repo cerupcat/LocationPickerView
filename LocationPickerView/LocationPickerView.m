@@ -390,7 +390,7 @@
     [self insertSubview:self.mapView belowSubview:self.tableView];
     
     //enable scrolling
-    self.tableView.scrollEnabled = NO;
+    self.tableView.scrollEnabled = YES;
     
     if(animated == YES)
     {
