@@ -14,6 +14,7 @@
 @property (nonatomic) BOOL isMapAnimating;
 @property (nonatomic) CGRect defaultMapViewFrame;
 @property (nonatomic, strong) UITapGestureRecognizer *mapTapGesture;
+@property (nonatomic, strong) UITapGestureRecognizer *tableTapGesture;
 
 /** This is only created if the user does not override the 
  mapViewDidExpand: method. Allows the user to shrink the map. */
@@ -55,6 +56,7 @@
     _defaultMapHeight               = 130.0f;
     _parallaxScrollFactor           = 0.6f;
     _amountToScrollToFullScreenMap  = 110.0f;
+    _amountOfTableToShow            = 0;
     self.autoresizesSubviews        = YES;
     self.autoresizingMask           = UIViewAutoresizingFlexibleWidth |
                                       UIViewAutoresizingFlexibleHeight;
@@ -277,13 +279,22 @@
     [self bringSubviewToFront:self.mapView];
     [self insertSubview:self.closeMapButton aboveSubview:self.mapView];
     
+    // Store the correct tableViewFrame.
+    // Set table view off the bottom of the screen, and animate
+    // back to normal
+    CGRect tempFrame = self.tableView.frame;
+    tempFrame.origin.y = tempFrame.size.height - self.defaultMapHeight - self.amountOfTableToShow;
+    
     if(animated == YES)
     {
         [UIView animateWithDuration:0.3
                               delay:0.0
                             options:UIViewAnimationOptionCurveEaseOut
                          animations:^{
-                             self.mapView.frame = self.bounds;
+                             CGRect frame = self.bounds;
+                             frame.size.height -= self.amountOfTableToShow;
+                             self.mapView.frame = frame;
+                             self.tableView.frame = tempFrame;
                          } completion:^(BOOL finished) {
                              self.isMapAnimating = NO;
                              _isMapFullScreen = YES;
@@ -304,7 +315,9 @@
     }
     else
     {
-        self.mapView.frame = self.bounds;
+        CGRect frame = self.bounds;
+        frame.size.height -= self.amountOfTableToShow;
+        self.mapView.frame = frame;
         self.isMapAnimating = NO;
         _isMapFullScreen = YES;
         self.mapView.scrollEnabled = YES;
@@ -316,6 +329,17 @@
         
         if (self.shouldCreateHideMapButton) {
             [self showCloseMapButton];
+        }
+    }
+    
+    // Add tap gesture to table
+    if(self.amountOfTableToShow > 0){
+        if (!self.tableTapGesture) {
+            self.tableTapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                                           action:@selector(hideMapView:)];
+            self.tableTapGesture.cancelsTouchesInView = YES;
+            self.tableTapGesture.delaysTouchesBegan = NO;
+            [self.tableView addGestureRecognizer:self.tableTapGesture];
         }
     }
 }
@@ -346,8 +370,8 @@
     // Store the correct tableViewFrame.
     // Set table view off the bottom of the screen, and animate
     // back to normal
-    CGRect tempFrame = self.tableView.frame;
-    self.tableView.frame = CGRectMake(0, 480, tempFrame.size.width, tempFrame.size.height);
+    CGRect tempFrame = CGRectMake(0, 0, self.tableView.frame.size.width, self.tableView.frame.size.height);
+    self.tableView.frame = CGRectMake(0, self.tableView.frame.origin.y, tempFrame.size.width, tempFrame.size.height);
     [self insertSubview:self.mapView belowSubview:self.tableView];
     
     if(animated == YES)
@@ -386,6 +410,12 @@
         if ([self.delegate respondsToSelector:@selector(locationPicker:mapViewWasHidden:)]) {
             [self.delegate locationPicker:self mapViewWasHidden:self.mapView];
         }
+    }
+    
+    //remove gesture
+    if (self.tableTapGesture) {
+        [self.tableView removeGestureRecognizer:self.tableTapGesture];
+        self.tableTapGesture = nil;
     }
 }
 

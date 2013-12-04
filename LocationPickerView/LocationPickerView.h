@@ -39,6 +39,10 @@ typedef void (^LocationPickerViewBlock)(LocationPickerView *locationPicker);
  map view pop-out to full screen. By default this is set to "140.0f". */
 @property (nonatomic) CGFloat amountToScrollToFullScreenMap;
 
+/** The amount you must "pull down" on the scroll view to make the
+ map view pop-out to full screen. By default this is set to "140.0f". */
+@property (nonatomic) CGFloat amountOfTableToShow;
+
 /** If set to YES, this will automatically create an "X" button to shrink
  the map back down when it is shown. The button hides when the map returns
  to it's default size. This property defaults to NO. */
