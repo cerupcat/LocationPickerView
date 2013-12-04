@@ -326,7 +326,7 @@
     {
         CGRect frame = self.bounds;
         frame.size.height -= self.amountOfTableToShow;
-        self.mapView.frame = frame;
+        self.tableView.frame = tempFrame;
         self.isMapAnimating = NO;
         _isMapFullScreen = YES;
         self.mapView.scrollEnabled = YES;
