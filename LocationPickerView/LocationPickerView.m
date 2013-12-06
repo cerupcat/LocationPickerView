@@ -285,9 +285,6 @@
     CGRect tempFrame = self.tableView.frame;
     tempFrame.origin.y = tempFrame.size.height - self.amountOfTableToShow;
     
-    //disable scrolling when map is expanded
-    self.tableView.scrollEnabled = NO;
-    
     if(animated == YES)
     {
         [UIView animateWithDuration:0.3
@@ -304,8 +301,12 @@
                              UIView *tableHeaderView = self.tableView.tableHeaderView;
                              tableHeaderView.frame = tableHeaderViewFrame;
                              self.tableView.tableHeaderView = tableHeaderView;
-                             
+
                          } completion:^(BOOL finished) {
+
+                             //disable scrolling when map is expanded
+                             self.tableView.scrollEnabled = NO;
+                             
                              self.isMapAnimating = NO;
                              _isMapFullScreen = YES;
                              self.mapView.scrollEnabled = YES;
@@ -327,17 +328,22 @@
     {
         CGRect frame = self.bounds;
         frame.size.height -= self.amountOfTableToShow;
+        self.mapView.frame = frame;
         self.tableView.frame = tempFrame;
-        self.isMapAnimating = NO;
-        _isMapFullScreen = YES;
-        self.mapView.scrollEnabled = YES;
-        self.mapView.zoomEnabled = YES;
+        
+        //disable scrolling when map is expanded
+        self.tableView.scrollEnabled = NO;
         
         //resize header to 0
         CGRect tableHeaderViewFrame = CGRectMake(0.0, 0.0, self.tableView.frame.size.width, 0);
         UIView *tableHeaderView = self.tableView.tableHeaderView;
         tableHeaderView.frame = tableHeaderViewFrame;
         self.tableView.tableHeaderView = tableHeaderView;
+        
+        self.isMapAnimating = NO;
+        _isMapFullScreen = YES;
+        self.mapView.scrollEnabled = YES;
+        self.mapView.zoomEnabled = YES;
         
         if ([self.delegate respondsToSelector:@selector(locationPicker:mapViewDidExpand:)]) {
             [self.delegate locationPicker:self mapViewDidExpand:self.mapView];
@@ -501,6 +507,25 @@
             if (self.pullToExpandMapEnabled &&
                 (self.isMapAnimating == NO) &&
                 (scrollOffset <= -self.amountToScrollToFullScreenMap)) {
+                
+                //disable scrolling when map is expanded
+                self.tableView.scrollEnabled = NO;
+                
+                [self.tableView setContentOffset:CGPointZero animated:YES];
+                
+                //resize header to 0
+                CGRect tableHeaderViewFrame = CGRectMake(0.0, 0.0, self.tableView.frame.size.width, 0);
+                UIView *tableHeaderView = self.tableView.tableHeaderView;
+                tableHeaderView.frame = tableHeaderViewFrame;
+                self.tableView.tableHeaderView = tableHeaderView;
+                
+                // Store the correct tableViewFrame.
+                // Set table view off the bottom of the screen, and animate
+                // back to normal
+                CGRect tempFrame = self.tableView.frame;
+                tempFrame.origin.y = (scrollOffset * -1) + _defaultMapHeight;
+                self.tableView.frame = tempFrame;
+                
                 [self expandMapView:self];
             }
             else {
