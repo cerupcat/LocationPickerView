@@ -15,8 +15,9 @@
 @property (nonatomic) CGRect defaultMapViewFrame;
 @property (nonatomic, strong) UITapGestureRecognizer *mapTapGesture;
 @property (nonatomic, strong) UITapGestureRecognizer *tableTapGesture;
+@property (nonatomic, strong) UISwipeGestureRecognizer *swipeUpGestureRecognizer;
 
-/** This is only created if the user does not override the 
+/** This is only created if the user does not override the
  mapViewDidExpand: method. Allows the user to shrink the map. */
 @property (nonatomic, strong) UIButton *closeMapButton;
 
@@ -59,7 +60,7 @@
     _amountOfTableToShow            = 0;
     self.autoresizesSubviews        = YES;
     self.autoresizingMask           = UIViewAutoresizingFlexibleWidth |
-                                      UIViewAutoresizingFlexibleHeight;
+    UIViewAutoresizingFlexibleHeight;
     self.backgroundViewColor = [UIColor clearColor];
 }
 
@@ -272,7 +273,7 @@
             [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:animated];
         }
     }
-
+    
     CGRect newMapFrame = self.mapView.frame;
     newMapFrame = CGRectMake(self.defaultMapViewFrame.origin.x,
                              self.defaultMapViewFrame.origin.y + (self.defaultMapHeight * self.parallaxScrollFactor),
@@ -304,9 +305,8 @@
                              UIView *tableHeaderView = self.tableView.tableHeaderView;
                              tableHeaderView.frame = tableHeaderViewFrame;
                              self.tableView.tableHeaderView = tableHeaderView;
-
                          } completion:^(BOOL finished) {
-
+                             
                              //disable scrolling when map is expanded
                              self.tableView.scrollEnabled = NO;
                              
@@ -365,6 +365,13 @@
             self.tableTapGesture.cancelsTouchesInView = YES;
             self.tableTapGesture.delaysTouchesBegan = NO;
             [self.tableView addGestureRecognizer:self.tableTapGesture];
+        }
+        
+        if(!self.swipeUpGestureRecognizer)
+        {
+            self.swipeUpGestureRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(hideMapView:)];
+            self.swipeUpGestureRecognizer.direction = UISwipeGestureRecognizerDirectionUp;
+            [self.tableView addGestureRecognizer:self.swipeUpGestureRecognizer];
         }
     }
 }
@@ -442,7 +449,7 @@
         UIView *tableHeaderView = self.tableView.tableHeaderView;
         tableHeaderView.frame = tableHeaderViewFrame;
         self.tableView.tableHeaderView = tableHeaderView;
-
+        
         // "Pop" the map view back in
         [self insertSubview:self.closeMapButton aboveSubview:self.mapView];
         self.isMapAnimating = NO;
@@ -457,6 +464,12 @@
     if (self.tableTapGesture) {
         [self.tableView removeGestureRecognizer:self.tableTapGesture];
         self.tableTapGesture = nil;
+    }
+    
+    if(self.swipeUpGestureRecognizer)
+    {
+        [self.tableView removeGestureRecognizer:self.swipeUpGestureRecognizer];
+        self.swipeUpGestureRecognizer = nil;
     }
 }
 
@@ -483,7 +496,7 @@
                       ofObject:(id)object
                         change:(NSDictionary *)change
                        context:(void *)context
-{    
+{
 	// Make sure we are observing this value.
 	if (context != (__bridge void *)self) {
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
